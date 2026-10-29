@@ -1,0 +1,42 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+
+autonumber
+
+'hide footbox
+actor "Vehicle and Equipment Fleet Manager (VFM)" as VFM
+participant ":ListMaintenanceUI" as UI
+participant ":VehicleController" as CTRL
+participant ":Repositories" as RepositorySingleton
+participant "repositories\n:Repositories" as PLAT
+participant "vehicleRepository:\nVehicleRepository" as VehicleRepository
+activate VFM
+
+    VFM -> UI : requests to list vehicles needing maintenance
+    activate UI
+
+        UI -> CTRL : getVehicleMaintenanceList()
+        activate CTRL
+
+            ref over CTRL
+                Get Vehicle List
+            end ref
+
+            ref over CTRL
+                Create Maintenance List
+            end ref
+
+
+
+            CTRL -> UI : maintenanceList
+        deactivate CTRL
+
+        UI --> VFM : shows maintenance List
+    deactivate UI
+
+deactivate VFM
+
+@enduml

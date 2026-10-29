@@ -1,0 +1,1347 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+'hide footbox
+actor "Human Resources Manager" as HRM
+participant ":GUI" as UI
+participant ":Repositories" as RepositorySingleton
+participant "repositories\n:Repositories" as PLAT
+participant "collaboratorRepository\n:CollaboratorRepository" as TCR
+participant ":CollaboratorController" as CollaboratorController
+participant "collaboratorRepository:\nCollaboratorRepository" as CLBREP
+participant ":Collaborator" as CLB
+participant "jobRepository:\nJobRepository" as jobRepository
+
+participant ":VehicleController" as VehicleController
+participant "vehicleRepository\n:VehicleRepository" as vehicleRep
+participant "vehicle\n:Vehicle" as vehicle
+participant "GreenSpaceController" as GreenSpaceController
+participant "GreenSpaceRepository" as GreenSpaceRepository
+
+
+
+activate HRM
+HRM -> UI: asks to register a new skill that a collaborator may have
+activate UI
+    UI -> UI: get all skill categories
+    activate UI
+        UI -> RepositorySingleton: get Instance()
+        activate RepositorySingleton
+        UI <-- RepositorySingleton: repositories
+        deactivate RepositorySingleton
+        UI -> PLAT: getCollaboratorRepository()
+        activate PLAT
+        UI <-- PLAT: CollaboratorRepository
+        deactivate PLAT
+        UI -> TCR: getAllCollaborators()
+        activate TCR
+        UI <-- TCR: collaboratorsList
+        deactivate TCR
+    UI <-- UI: collaboratorList
+    deactivate UI
+HRM <-- UI : shows the list of collaborators to select
+deactivate UI
+HRM -> UI: selects a collaborator
+activate UI
+UI --> HRM: requests skill(s) to be registered
+
+loop while HRM enters y
+deactivate UI
+HRM -> UI: selects a skill category
+activate UI
+HRM <-- UI: asks if there are more skill(s) to be registered
+deactivate UI
+HRM -> UI: enter x to stop or y to continue entering skills
+activate UI
+end
+    UI -> UI: addSkills(collaborator, skillList)
+    activate UI
+        UI -> TCR  : addSkills(collaborator, skillList)
+        activate TCR
+            TCR -> TCR  : addSkills(collaborator, skillList)
+            UI <-- TCR : operation success
+        deactivate TCR
+        UI <-- UI: operation success
+    deactivate UI
+HRM <-- UI: displays operation success
+deactivate UI
+
+
+
+    HRM -> UI : asks to register a job
+    activate UI
+
+
+
+        UI --> HRM : requests data
+    deactivate UI
+
+
+
+    HRM -> UI : types requested data
+    activate UI
+
+
+
+        UI --> HRM : shows all data and requests confirmation
+    deactivate UI
+
+    HRM -> UI : confirms data
+    activate UI
+    UI -> GreenSpaceController: registerJob(jobName)
+            activate JobController
+                JobController -> RepositorySingleton : getInstance()
+                activate RepositorySingleton
+                    RepositorySingleton --> JobController : repositories
+                deactivate RepositorySingleton
+
+                JobController -> PLAT : getJobRepository()
+                activate PLAT
+                PLAT --> JobController : jobRepository
+                deactivate PLAT
+
+                JobController -> JobRepository : addJob(jobName)
+                activate JobRepository
+
+                JobRepository -> Job : Job(jobName)
+                activate Job
+                Job --> JobRepository : job
+                deactivate Job
+
+                JobRepository -> JobRepository : validate(job)
+
+                JobRepository -> JobRepository : add(job)
+
+
+                JobRepository --> JobController : job
+                deactivate JobRepository
+                JobController --> UI : jobs
+
+            deactivate JobController
+
+        UI --> HRM : displays operation success
+    deactivate UI
+
+
+
+
+           HRM -> UI : wants to register a new collaborator
+           activate UI
+
+           UI --> HRM : asks for the info needed (name, birthdate, contactMobile, email, address, \n city, documentType[], documentCode, admissionDate)
+           deactivate UI
+
+           HRM -> UI : types requested data
+           activate UI
+
+           UI -> JC: get job list
+
+
+
+
+
+           activate JC
+
+               JC -> RepositorySingleton : getInstance()
+               activate RepositorySingleton
+
+               RepositorySingleton --> JC : repositories
+               deactivate RepositorySingleton
+
+               JC -> PLAT : getJobRepository()
+               activate PLAT
+
+               PLAT -->  JC: jobRepository
+               deactivate PLAT
+
+               JC -> jobRepository : getJobs()
+               activate jobRepository
+
+               jobRepository -> JC : jobsList
+               deactivate jobRepository
+
+
+               JC --> UI : job list
+
+           deactivate JC
+
+
+
+           UI --> HRM : shows the list of jobs and requests to select one
+           deactivate UI
+
+
+           HRM -> UI : select the job
+           activate UI
+
+           UI --> HRM: shows all data and requests for confirmation
+           deactivate UI
+
+           HRM -> UI: confirms the data
+           activate UI
+
+           UI -> CollaboratorController** : create collaborator
+
+
+           activate CollaboratorController
+
+               CollaboratorController -> RepositorySingleton : getInstance()
+               activate RepositorySingleton
+
+               RepositorySingleton --> CollaboratorController : repositories
+               deactivate RepositorySingleton
+
+               CollaboratorController -> PLAT : getCollaboratorRepository()
+               activate PLAT
+
+               PLAT -->  CollaboratorController: collaboratorRepository
+               deactivate PLAT
+
+               CollaboratorController --> CLBREP : create(name, birthdate, contactMobile, email, address, zipCode,\n city, documentType, identificationNumber, admissionDate, job, taxpayerNumber)
+
+
+               activate CLBREP
+               CLBREP->CLB** : create(name, birthdate, contactMobile, email, address, zipCode,\n city, documentType, identificationNumber, admissionDate, job, taxpayerNumber)
+
+               deactivate CLBREP
+
+
+               activate CLB
+                       CLB -> CLB : verifyCollaborator()
+
+                       CLB -> CollaboratorController : returnCollaborator()
+                   deactivate CLB
+
+                   CollaboratorController -> CLBREP: addCollaborator(collaborator)
+
+                   activate CLBREP
+
+                      CLBREP --> CollaboratorController : success
+                   deactivate CLBREP
+
+                   CollaboratorController --> UI : success
+           deactivate CollaboratorController
+
+           UI --> HRM : shows success message (collaborator created successfully)
+           deactivate UI
+
+
+
+
+    HRM -> UI : asks to add one or more Skills to a collaborator
+    activate UI
+    UI -> CollaboratorController** : create
+       UI -> CollaboratorController: getCollaboratorList()
+       activate CollaboratorController
+                       CollaboratorController -> RepositorySingleton : getInstance()
+                       activate RepositorySingleton
+
+                           RepositorySingleton --> CollaboratorController: repositories
+                       deactivate RepositorySingleton
+
+                       CollaboratorController -> PLAT : getCollaboratorRepository()
+                       activate PLAT
+
+                           PLAT --> CollaboratorController: CollaboratorRepository
+                       deactivate PLAT
+
+
+
+                       CollaboratorController -> CollaboratorRepository : getCollaboratorList()
+                       activate CollaboratorRepository
+
+                    CollaboratorRepository -> CollaboratorController: returns collaboratorList
+                deactivate CollaboratorRepository
+           CollaboratorController -> UI: returns collaboratorList
+       deactivate CollaboratorController
+       UI -> HRM: shows the collaborator list and asks to choose one
+    deactivate UI
+    HRM -> UI : chooses the collaborator
+
+    activate UI
+        UI -> SkillCTRL** : create
+        UI -> SkillCTRL : getSkills()
+        activate SkillCTRL
+        SkillCTRL -> RepositorySingleton : getInstance()
+             activate RepositorySingleton
+
+                  RepositorySingleton --> SkillCTRL: repositories
+             deactivate RepositorySingleton
+            SkillCTRL -> PLAT : getSkillRepository()
+            activate PLAT
+            PLAT --> SkillCTRL: SkillRepository
+            deactivate PLAT
+            SkillCTRL -> SkillRepository: getSkillsThatTheCollaboratorDoesNotHave(collaborator)
+            activate SkillRepository
+                SkillRepository -> SkillCTRL: returns skills
+            deactivate SkillRepository
+
+            SkillCTRL -> UI: returns skills
+            deactivate SkillCTRL
+
+        UI -> HRM: shows the skills that the collaborator doesn't \nhave and asks to choose the ones he wants to add
+    deactivate UI
+    HRM -> UI: chooses the skills that he wants to add
+
+    activate UI
+        UI -> CollaboratorController: addSkills(collaborator, skills)
+        activate CollaboratorController
+        loop for each skill in skills
+            CollaboratorController -> CollaboratorActor** : addSkill(skill)
+        end
+        CollaboratorController -> UI: returns success
+    deactivate CollaboratorController
+    UI -> HRM: shows the updated collaborator information
+    deactivate UI
+
+
+    HRM -> UI : asks to generate a team proposal
+    activate UI
+        UI -> HRM: minimum and maximum team size
+    deactivate UI
+    HRM -> UI : writes the required values
+
+    activate UI
+        UI -> SkillCTRL: getSkillList()
+        activate SkillCTRL
+            SkillCTRL -> Repos: getSkillRepository()
+            activate Repos
+                Repos -> SkillCTRL: returns SkillRepository
+            deactivate Repos
+            SkillCTRL -> SkillRepository: getSkills()
+            activate SkillRepository
+                SkillRepository -> SkillCTRL: returns skills
+            deactivate SkillRepository
+            SkillCTRL -> UI: returns skills
+        deactivate SkillCTRL
+
+        UI -> HRM: shows the possible skills for the team and asks the user to choose which one he wants and in which quantity
+    deactivate UI
+    HRM -> UI: chooses the skills that he wants to add
+
+    activate UI
+        UI -> CollaboratorController: generateTeamProposal(minTeamSize, maxTeamSize, skillList)
+        activate CollaboratorController
+            CollaboratorController -> Repos: getCollaboratorRepository()
+            activate Repos
+                Repos -> CollaboratorController: returns CollaboratorRepository
+            deactivate Repos
+            CollaboratorController -> CollaboratorRepository: generateTeamProposals(minTeamSize, maxTeamSize, skillList)
+            activate CollaboratorRepository
+               alt if at least one team is achieved
+                CollaboratorRepository -> CollaboratorController: returns team proposals
+                    CollaboratorController -> UI: return the team list
+                    UI -> HRM: display the team options, and allow the user to choose one
+                    HRM -> UI:  the user chooses the team
+                    UI -> CollaboratorController: startTask(collaboratorList)
+                    CollaboratorController -> UI: return success
+                    UI -> HRM: displays success
+               else if no team is achieved
+                    CollaboratorRepository -> CollaboratorController: returns error
+            deactivate CollaboratorRepository
+                    CollaboratorController -> UI: return error that no team was possible
+                    UI -> HRM: display the error
+                end
+        deactivate CollaboratorController
+    deactivate UI
+deactivate HRM
+
+
+actor "Fleet Manager (FM)" as FM
+
+activate FM
+
+        FM -> UI : requests to register a new vehicleRep
+        activate UI
+
+        UI --> FM : asks for vehicle plate
+
+        deactivate UI
+        FM -> UI : types vehicle plate
+        activate UI
+        UI -> UI : validates vehicle plate
+'            UI --> ADM : requests data (reference, description,  informal \n description, technical description, duration, cost)
+            UI -> VehicleController : getVehicleByPlate(plate)
+            activate VehicleController
+           VehicleController ->RepositorySingleton : getInstance()
+                                        activate RepositorySingleton
+
+                                            RepositorySingleton --> VehicleController: repositories
+                                        deactivate RepositorySingleton
+
+                                       VehicleController ->PLAT : getVehicleRepository()
+                                        activate PLAT
+
+                                            PLAT -> VehicleController : vehicleRepository
+                                        deactivate PLAT
+           VehicleController ->vehicleRep : getVehicleByPlate(plate)
+            activate vehicleRep
+
+            vehicleRep --> VehicleController : vehicle
+            deactivate vehicleRep
+            VehicleController --> UI : vehicle
+            deactivate VehicleController
+        alt vehicle != null
+        UI --> FM : informs that vehicle already exists
+        else vehicle == null
+        UI --> FM : asks for vehicle info (tare weight, gross weight, current Km, \nregister date, acquisition date, maintenance frequency)
+        deactivate UI
+        FM -> UI : types vehicle info
+        activate UI
+        UI -> UI : validates vehicle info
+        UI -> VehicleController : getVehicleBrandsList()
+        activate VehicleController
+       VehicleController ->RepositorySingleton : getInstance()
+                                    activate RepositorySingleton
+
+                                        RepositorySingleton --> VehicleController: repositories
+                                    deactivate RepositorySingleton
+
+                                   VehicleController ->PLAT : getVehicleRepository()
+                                    activate PLAT
+
+                                        PLAT -> VehicleController : vehicleRepository
+                                    deactivate PLAT
+       VehicleController ->vehicleRep : getVehicleBrandsList()
+        activate vehicleRep
+
+        vehicleRep --> VehicleController : brandsList
+        deactivate vehicleRep
+        VehicleController --> UI : brandsList
+        deactivate VehicleController
+        UI --> FM : asks to select brand
+        deactivate UI
+        FM -> UI : selects brand
+        activate UI
+        UI -> VehicleController : getVehicleModelsList(brand)
+        activate VehicleController
+       VehicleController ->RepositorySingleton : getInstance()
+                                    activate RepositorySingleton
+
+                                        RepositorySingleton --> VehicleController: repositories
+                                    deactivate RepositorySingleton
+
+                                   VehicleController ->PLAT : getVehicleRepository()
+                                    activate PLAT
+
+                                        PLAT -> VehicleController : vehicleRepository
+                                    deactivate PLAT
+       VehicleController ->vehicleRep : getVehicleModelsList(brand)
+        activate vehicleRep
+        vehicleRep --> VehicleController : modelsList
+        deactivate vehicleRep
+        VehicleController --> UI : modelsList
+        deactivate VehicleController
+        UI --> FM : asks to select model
+        deactivate UI
+        FM -> UI : selects model
+        activate UI
+        UI -> VehicleController : getVehicleTypesList(model)
+        activate VehicleController
+       VehicleController ->RepositorySingleton : getInstance()
+                                    activate RepositorySingleton
+
+                                        RepositorySingleton --> VehicleController: repositories
+                                    deactivate RepositorySingleton
+
+                                   VehicleController ->PLAT : getVehicleRepository()
+                                    activate PLAT
+
+                                        PLAT -> VehicleController : vehicleRepository
+                                    deactivate PLAT
+       VehicleController ->vehicleRep : getVehicleTypesList(model)
+        activate vehicleRep
+        vehicleRep --> VehicleController : typesList
+        deactivate vehicleRep
+        VehicleController --> UI : typesList
+        deactivate VehicleController
+        UI --> FM : asks to select type
+        deactivate UI
+        FM -> UI : selects type
+        activate UI
+        UI --> FM : shows all data and requests confirmation
+        deactivate UI
+        FM -> UI : confirms data
+        activate UI
+        UI --> VehicleController : saveNewVehicle(tareWeight, grossWeight, currentKm, \nregisterDate, acquisitionDate, maintenanceFrequency, \nplate, brand, model, type)
+        activate VehicleController
+        VehicleController --> vehicle : createNewVehicle(tareWeight, grossWeight, currentKm, \nregisterDate, acquisitionDate, maintenanceFrequency, \nplate, brand, model, type)
+        activate vehicle
+        vehicle --> VehicleController : vehicle
+        deactivate vehicle
+       VehicleController ->RepositorySingleton : getInstance()
+                                    activate RepositorySingleton
+
+                                        RepositorySingleton --> VehicleController: repositories
+                                    deactivate RepositorySingleton
+
+                                   VehicleController ->PLAT : getVehicleRepository()
+                                    activate PLAT
+
+                                        PLAT -> VehicleController : vehicleRepository
+                                    deactivate PLAT
+        VehicleController --> vehicleRep : storeVehicle(vehicle)
+        activate vehicleRep
+        vehicleRep --> VehicleController : success
+        deactivate vehicleRep
+        VehicleController --> UI : success
+        deactivate VehicleController
+        UI --> FM : informs that vehicle was registered
+        deactivate UI
+end
+
+
+    FM -> UI : requests to list VehicleController needing maintenance
+    activate UI
+
+        UI -> VehicleController : getVehiclesList()
+        activate VehicleController
+
+       VehicleController ->RepositorySingleton : getInstance()
+        activate RepositorySingleton
+
+            RepositorySingleton --> VehicleController: repositories
+        deactivate RepositorySingleton
+
+       VehicleController ->PLAT : getVehicleRepository()
+        activate PLAT
+
+            PLAT --> VehicleController: VehicleRepository
+        deactivate PLAT
+
+
+
+           VehicleController ->VehicleRepository : getVehiclesList()
+            activate VehicleRepository
+
+                VehicleRepository --> VehicleController : vehicleList
+            deactivate VehicleRepository
+
+            VehicleController --> UI : vehicleList
+            deactivate VehicleController
+
+            UI --> FM : displays vehicle List
+            deactivate UI
+
+            FM -> UI : Chooses vehicle
+            activate UI
+
+            UI -> VehicleController : vehicle
+            activate VehicleController
+
+            VehicleController --> UI : requests data(date, current Km)
+            deactivate VehicleController
+
+            UI --> FM : requests data (date, current Km)
+            deactivate
+
+            FM -> UI : Types data (date, current Km)
+            activate UI
+
+            UI -> VehicleController : register maintenance
+            activate VehicleController
+
+              VehicleController ->PLAT : getMaintenanceRepository()
+                        activate PLAT
+
+                        PLAT --> VehicleController : MaintenanceRepository
+                        deactivate
+
+
+           VehicleController ->VehicleRepository : register maintenance
+            activate VehicleRepository
+
+            activate VehicleRepository
+
+               VehicleRepository -> VehicleRepository : verifyFilled(maintenance)
+               VehicleRepository -> VehicleRepository : verifySpecialCharacters(maintenance)
+
+               deactivate
+               VehicleRepository --> VehicleController : maintenance
+               deactivate
+               VehicleController --> UI : maintenance
+               deactivate
+               UI --> FM : Displays maintenance data
+               UI --> FM : requests confirmation
+               deactivate
+               FM -> UI : confirms data
+               activate UI
+
+               UI -> VehicleController : confirmation
+               activate VehicleController
+
+               VehicleController --> UI : operation success
+               deactivate
+               UI -> FM : displays operation success
+               deactivate
+
+
+    FM -> UI :requests to list VehicleController needing maintenance
+    activate UI
+
+
+
+        UI -> VehicleController : getVehiclesList()
+        activate VehicleController
+
+        VehicleController ->RepositorySingleton : getInstance()
+        activate RepositorySingleton
+
+            RepositorySingleton --> VehicleController: repositories
+        deactivate RepositorySingleton
+
+       VehicleController ->PLAT : getVehicleRepository()
+        activate PLAT
+
+            PLAT --> VehicleController: VehicleRepository
+        deactivate PLAT
+
+
+           VehicleController ->VehicleRepository : getVehiclesNeedingMaintenance()
+            activate VehicleRepository
+
+                VehicleRepository --> VehicleController : vehicleList
+            deactivate VehicleRepository
+
+           VehicleController ->VehicleRepository : getMaintenanceList(vehicleList)
+
+            activate VehicleRepository
+
+                VehicleRepository --> VehicleController : maintenanceList
+            deactivate VehicleRepository
+
+       VehicleController ->UI: maintenanceList
+        deactivate VehicleController
+
+
+        UI --> FM : shows list
+    deactivate UI
+
+    deactivate FM
+
+actor "Green Space Manager \nGSM)" as GSM
+
+activate GSM
+
+GSM -> UI : requests to register a new green space
+activate UI
+loop while data is not valid
+UI --> GSM : requests green space name, city, street address and zip code
+deactivate UI
+GSM -> UI : types green space name, city, street address and zip code
+activate UI
+UI -> UI: validates data
+end
+UI -> Address : createAddress(city, street address, zip code)
+activate Address
+Address --> UI : address
+deactivate Address
+deactivate GreenSpaceController
+UI -> GreenSpaceController: getGreenSpace(name, address)
+activate GreenSpaceController
+GreenSpaceController -> RepositorySingleton : getInstance()
+                                        activate RepositorySingleton
+
+                                            RepositorySingleton --> GreenSpaceController: repositories
+                                        deactivate RepositorySingleton
+
+                                        GreenSpaceController -> PLAT : getGreenSpaceRepository()
+                                        activate PLAT
+
+                                            PLAT --> GreenSpaceController : greenSpaceRepository
+                                        deactivate PLAT
+GreenSpaceController -> GreenSpaceRepository: getGreenSpace(name, address)
+activate GreenSpaceRepository
+GreenSpaceRepository --> GreenSpaceController: greenSpace
+deactivate GreenSpaceRepository
+GreenSpaceController --> UI: greenSpace
+deactivate GreenSpaceController
+alt green space != null
+    UI --> GSM : notifies that green space already exists
+    else green space == null
+    loop while data is not valid
+    UI --> GSM : requests green space area
+
+deactivate UI
+    GSM -> UI : types requested data
+    activate UI
+    UI -> UI: validates data
+    end
+    UI -> GreenSpaceController: getGreenSpaceType()
+    activate GreenSpaceController
+    GreenSpaceController -> RepositorySingleton : getInstance()
+                                            activate RepositorySingleton
+
+                                                RepositorySingleton --> GreenSpaceController: repositories
+                                            deactivate RepositorySingleton
+
+                                            GreenSpaceController -> PLAT : getGreenSpaceRepository()
+                                            activate PLAT
+
+                                                PLAT --> GreenSpaceController : greenSpaceRepository
+                                            deactivate PLAT
+    GreenSpaceController -> GreenSpaceRepository: getGreenSpaceType()
+    activate GreenSpaceRepository
+    GreenSpaceRepository --> GreenSpaceController: typeList
+    deactivate GreenSpaceRepository
+    GreenSpaceController --> UI: typeList
+    deactivate GreenSpaceController
+    UI --> GSM : asks to select type
+    deactivate UI
+    GSM -> UI : selects type
+    activate UI
+    UI --> GSM : shows all data and requests confirmation
+    deactivate UI
+deactivate UI
+    GSM -> UI : confirms data
+    activate UI
+    UI -> GSM: saveNewGreenSpace(name, address, area, type)
+    activate GSM
+   GSM --> UI :greenSpace
+   deactivate GSM
+   UI -> GreenSpaceController: storeGreenSpace(greenSpace)
+   activate GreenSpaceController
+   GreenSpaceController -> RepositorySingleton : getInstance()
+                                               activate RepositorySingleton
+
+                                                   RepositorySingleton --> GreenSpaceController: repositories
+                                               deactivate RepositorySingleton
+
+                                               GreenSpaceController -> PLAT : getGreenSpaceRepository()
+                                               activate PLAT
+
+                                                   PLAT --> GreenSpaceController : greenSpaceRepository
+                                               deactivate PLAT
+   GreenSpaceController -> GreenSpaceRepository: storeGreenSpace(greenSpace)
+   activate GreenSpaceRepository
+   GreenSpaceRepository --> GreenSpaceController: success
+   deactivate GreenSpaceRepository
+   GreenSpaceController --> UI : success
+   deactivate GreenSpaceController
+    UI --> GSM: notifies successful green space registration
+deactivate UI
+end
+
+
+
+participant ":ToDoListGUI" as UI
+participant ":ToDoListController" as ToDoListController
+participant "ToDoList" as ToDoList
+
+
+    GSM -> UI : asks to add a new entry to the To-Do List
+    activate UI
+
+        UI -> GreenSpaceController : getGreenSpaces()
+        activate GreenSpaceController
+
+            GreenSpaceController -> RepositorySingleton : getInstance()
+            activate RepositorySingleton
+
+                RepositorySingleton --> GreenSpaceController : repositories
+            deactivate RepositorySingleton
+
+            GreenSpaceController -> PLAT : getGreenSpaceRepository()
+            activate PLAT
+
+                PLAT --> GreenSpaceController : greenSpaceRepository
+            deactivate PLAT
+
+            GreenSpaceController -> GreenSpaceRepository : getGreenSpaces()
+            activate GreenSpaceRepository
+
+                GreenSpaceRepository --> GreenSpaceController : greenSpaces
+            deactivate GreenSpaceRepository
+
+
+            GreenSpaceController --> UI : greenSpaces
+        deactivate GreenSpaceController
+
+        UI --> GSM : displays a list of green spaces
+    deactivate UI
+
+    GSM -> UI : selects a green space
+    activate UI
+
+    UI --> GSM :  requests data (i.e. title, description, state, \nduration, degree of urgency)
+    deactivate UI
+
+    GSM -> UI : types requested data
+    activate UI
+
+        UI -> ToDoListController** : create
+
+        UI -> ToDoListController : createToDoList(title, description, degreeOfUrgency, \nexpectedDuration, status)
+        activate ToDoListController
+
+            ToDoListController -> RepositorySingleton : getInstance()
+                       activate RepositorySingleton
+
+                           RepositorySingleton --> ToDoListController : repositories
+                       deactivate RepositorySingleton
+
+                       ToDoListController -> ToDoList : getToDoList()
+                       activate ToDoList
+
+                           ToDoList --> ToDoListController : toDoList
+                       deactivate ToDoList
+
+                       ToDoListController -> ToDoList : addToDoListEntry()
+                       activate ToDoList
+
+                       ToDoList -> ToDoList : validateEntry()
+
+                           ToDoList --> ToDoListController : toDoEntry
+                       deactivate ToDoList
+
+
+                       ToDoListController --> UI : toDoEntry
+                   deactivate ToDoListController
+
+               UI --> GSM : displays operation success
+                deactivate UI
+
+
+    deactivate UI
+
+ participant ":AddEntryToDoListGUI" as UI
+ participant ":AgendaController" as AgendaController
+ participant "Agenda:\Agenda" as Agenda
+
+
+
+     GSM -> UI : asks to add an entry to the ToDoList
+     activate UI
+
+                UI -> ToDoListController** : create
+                UI -> ToDoListController : addEntry()
+                activate ToDoListController
+                ToDoListController -> RepositorySingleton : getInstance()
+                     activate RepositorySingleton
+
+                          RepositorySingleton --> ToDoListController: repositories
+                     deactivate RepositorySingleton
+                    ToDoListController -> PLAT : getSkillRepository()
+                    activate PLAT
+                    PLAT --> ToDoListController: ToDoList
+                    deactivate PLAT
+                    ToDoListController -> ToDoList: getEntries()
+                    activate ToDoList
+                        ToDoList -> ToDoListController: return entries
+                    deactivate ToDoList
+
+                    ToDoListController -> UI: return entries
+                    deactivate ToDoListController
+
+                 UI -> GSM: asks to choose the entry to add
+            deactivate UI
+
+               GSM -> UI : chooses the entry
+                 activate UI
+                 UI -> GSM: Asks for the start date,\n and end date or duration
+             deactivate UI
+
+             GSM -> UI : enters the start date,\n and end date or duration
+             activate UI
+
+        UI -> AgendaController: create
+        UI -> AgendaController : addEntry()
+        activate AgendaController
+                        AgendaController -> RepositorySingleton : getInstance()
+                        activate RepositorySingleton
+
+                            RepositorySingleton --> AgendaController: repositories
+                        deactivate RepositorySingleton
+
+                        AgendaController -> PLAT : getAgenda()
+                        activate PLAT
+
+                            PLAT --> AgendaController: Agenda
+                        deactivate PLAT
+
+
+
+                        AgendaController -> Agenda : addEntry(entry)
+                        activate Agenda
+
+                     Agenda -> AgendaController: returns success
+                 deactivate Agenda
+            AgendaController -> UI: returns success
+        deactivate AgendaController
+        UI -> GSM: displays success
+     deactivate UI
+
+
+
+
+
+
+participant ":AssignTeamToAgendaEntryGUI" as UI
+participant ":TeamController" as TeamController
+participant "TeamRepository:\nTeamRepository" as TeamRepository
+
+
+
+    GSM -> UI : asks to assign a team to an Agenda entry
+    activate UI
+    UI -> AgendaController** : create
+       UI -> AgendaController: getCollaboratorList()
+       activate AgendaController
+                       AgendaController -> RepositorySingleton : getInstance()
+                       activate RepositorySingleton
+
+                           RepositorySingleton --> AgendaController: repositories
+                       deactivate RepositorySingleton
+
+                       AgendaController -> PLAT : getAgenda()
+                       activate PLAT
+
+                           PLAT --> AgendaController: Agenda
+                       deactivate PLAT
+
+
+
+                       AgendaController -> Agenda : getEntries()
+                       activate Agenda
+
+                    Agenda -> AgendaController: returns entry list
+                deactivate Agenda
+           AgendaController -> UI: returns entry list
+       deactivate AgendaController
+       UI -> GSM: shows the entry list and asks to choose one
+    deactivate UI
+    GSM -> UI : chooses the entry
+
+    activate UI
+        UI -> TeamController** : create
+        UI -> TeamController : getTeams()
+        activate TeamController
+        TeamController -> RepositorySingleton : getInstance()
+             activate RepositorySingleton
+
+                  RepositorySingleton --> TeamController: repositories
+             deactivate RepositorySingleton
+            TeamController -> PLAT : getTeamRepository()
+            activate PLAT
+            PLAT --> TeamController: TeamRepository
+            deactivate PLAT
+            TeamController -> TeamRepository: getTeams()
+            activate TeamRepository
+                TeamRepository -> TeamController: returns teams
+            deactivate TeamRepository
+
+            TeamController -> UI: returns teams
+            deactivate TeamController
+            UI -> AgendaController: getAvailableTeams(entry, teams)
+
+            activate AgendaController
+                AgendaController -> Agenda : getAvailableTeams(entry, teams)
+                activate Agenda
+                    Agenda -> AgendaController: returns available teams
+                deactivate Agenda
+            AgendaController -> UI: returns available teams
+            deactivate AgendaController
+        UI -> GSM: shows the available teams and asks to choose one
+
+    deactivate UI
+    GSM -> UI : chooses the team
+    activate UI
+    UI -> AgendaController : assignTeam(entry, team)
+    activate AgendaController
+        AgendaController -> Agenda : assignTeam(entry, team)
+        activate Agenda
+            Agenda -> AgendaController: returns success
+        deactivate Agenda
+    AgendaController -> UI: returns success
+    deactivate AgendaController
+    UI -> GSM: shows success message
+deactivate UI
+
+
+
+participant ":PostponeEntryGUI" as UI
+participant ":AgendaController" as AgendaController
+
+
+    GSM -> UI : asks to postpone an entry in the Agenda
+    activate UI
+
+        UI -> AgendaController : getAgendaEntries()
+        activate AgendaController
+
+            AgendaController -> RepositorySingleton : getInstance()
+            activate RepositorySingleton
+
+                RepositorySingleton --> AgendaController: repositories
+            deactivate RepositorySingleton
+
+            AgendaController -> PLAT : getAgenda()
+            activate PLAT
+
+                PLAT --> AgendaController : Agenda
+            deactivate PLAT
+
+             AgendaController -> Agenda : getEntries()
+                activate Agenda
+
+            Agenda --> AgendaController : entries
+                deactivate Agenda
+
+            AgendaController --> UI : entryList
+        deactivate AgendaController
+
+        UI --> GSM : shows the list of entries and asks to select one
+    deactivate UI
+
+    GSM -> UI : selects an entry and provides a new date
+    activate UI
+
+        UI -> AgendaController : postponeEntry(selectedEntry, newDate)
+        activate AgendaController
+
+            AgendaController -> PLAT : updateEntryDateAndStatus(updatedEntry, newDate)
+            activate PLAT
+
+                PLAT --> AgendaController : success/failure
+            deactivate PLAT
+
+            AgendaController --> UI : displays message of (in)success
+        deactivate AgendaController
+
+        UI --> GSM : displays message of (in)success
+    deactivate UI
+
+
+
+
+
+
+participant "CancelGUI" as UI
+
+
+    GSM -> UI : asks to cancel an entry in the Agenda
+    activate UI
+    UI -> AgendaController : getAgendaEntries()
+    activate AgendaController
+
+    AgendaController -> RepositorySingleton : getInstance()
+    activate RepositorySingleton
+    RepositorySingleton --> AgendaController : repositories
+    deactivate RepositorySingleton
+    AgendaController -> PLAT : getAgenda()
+    activate PLAT
+    PLAT --> AgendaController : Agenda
+    deactivate PLAT
+    AgendaController -> Agenda : getEntries()
+    activate Agenda
+
+    Agenda --> AgendaController : entries
+    deactivate Agenda
+
+    AgendaController --> UI : entrylist
+    deactivate AgendaController
+
+    UI --> GSM : shows data and requests selected data (agendaEntry)
+    deactivate UI
+
+    GSM -> UI : selects requested data (agendaEntry)
+    activate UI
+
+    UI --> GSM : requests confirmation
+    deactivate UI
+
+    GSM -> UI : confirms data
+    activate UI
+    UI -> AgendaController : cancelAgendaEntry(agendaEntry)
+    activate AgendaController
+        AgendaController -> Agenda : cancelEntry(agendaEntry)
+        activate Agenda
+
+        Agenda -> AgendaEntry : setNewEntryState()
+        activate AgendaEntry
+
+        AgendaEntry --> Agenda : true/false
+        deactivate AgendaEntry
+
+        Agenda --> AgendaController : true/false
+        deactivate Agenda
+        AgendaController --> UI : true/false
+        deactivate AgendaController
+
+        UI --> GSM : displays operation success
+        deactivate UI
+
+
+
+
+
+
+
+GSM -> UI : requests to assign one vehicle to an entry
+activate UI
+UI -> agendaController : getAgendaEntries()
+activate agendaController
+    agendaController -> RepositorySingleton : getInstance()
+                                        activate RepositorySingleton
+
+                                            RepositorySingleton --> agendaController: repositories
+                                        deactivate RepositorySingleton
+    agendaController -> PLAT : getAgenda()
+    activate PLAT
+    PLAT --> agendaController : Agenda
+    deactivate PLAT
+                                        agendaController -> Agenda : getAgendaEntries()
+                                        activate Agenda
+
+                                            Agenda --> agendaController : Agenda entries
+                                        deactivate Agenda
+agendaController --> UI : Agenda entries
+deactivate agendaController
+UI --> GSM : requests to select the entry
+deactivate UI
+GSM -> UI : selects the entry
+activate UI
+UI -> VehicleController : getVehicles()
+activate VehicleController
+VehicleController -> RepositorySingleton : getInstance()
+                                        activate RepositorySingleton
+
+                                            RepositorySingleton --> VehicleController: repositories
+                                        deactivate RepositorySingleton
+    VehicleController -> PLAT : getVehicleRepository()
+    activate PLAT
+    PLAT --> VehicleController : vehicleRepository
+    deactivate PLAT
+
+                                        VehicleController -> VehicleController : getVehicles()
+                                        activate VehicleController
+
+                                            VehicleController --> VehicleController : VehicleController list
+                                        deactivate VehicleController
+VehicleController --> UI : VehicleController list
+deactivate VehicleController
+UI --> GSM : requests to select the vehicle the user wants to add
+deactivate UI
+    GSM -> UI : selects the vehicle
+   activate UI
+       UI --> GSM : shows all data and requests confirmation
+       deactivate UI
+
+   deactivate UI
+       GSM -> UI : confirms data
+       activate UI
+       UI -> agendaController : addVehicleToAgendaEntry(vehicle, entry)
+       activate agendaController
+       agendaController -> Agenda : addVehicleToAgendaEntry(vehicle, entry)
+       activate Agenda
+         Agenda --> agendaController : success
+         deactivate Agenda
+         agendaController --> UI : success
+         deactivate agendaController
+       UI --> GSM: notifies successful vehicle registration
+   deactivate UI
+
+
+
+
+       participant ":AddVehicleToAgendaEntryUI" as UI
+
+
+
+       GSM -> UI : requests to assign one vehicle to an entry
+       activate UI
+       UI -> agendaController : getAgendaEntries()
+       activate agendaController
+           agendaController -> RepositorySingleton : getInstance()
+                                               activate RepositorySingleton
+
+                                                   RepositorySingleton --> agendaController: repositories
+                                               deactivate RepositorySingleton
+           agendaController -> PLAT : getAgenda()
+           activate PLAT
+           PLAT --> agendaController : Agenda
+           deactivate PLAT
+                                               agendaController -> Agenda : getAgendaEntries()
+                                               activate Agenda
+
+                                                   Agenda --> agendaController : Agenda entries
+                                               deactivate Agenda
+       agendaController --> UI : Agenda entries
+       deactivate agendaController
+       UI --> GSM : requests to select the entry
+       deactivate UI
+       GSM -> UI : selects the entry
+       activate UI
+       UI -> VehicleController : getVehicles()
+       activate VehicleController
+       VehicleController -> RepositorySingleton : getInstance()
+                                               activate RepositorySingleton
+
+                                                   RepositorySingleton --> VehicleController: repositories
+                                               deactivate RepositorySingleton
+           VehicleController -> PLAT : getVehicleRepository()
+           activate PLAT
+           PLAT --> VehicleController : vehicleRepository
+           deactivate PLAT
+
+                                               VehicleController -> VehicleController : getVehicles()
+                                               activate VehicleController
+
+                                                   VehicleController --> VehicleController : VehicleController list
+                                               deactivate VehicleController
+       VehicleController --> UI : VehicleController list
+       deactivate VehicleController
+       UI --> GSM : requests to select the vehicle the user wants to add
+       deactivate UI
+           GSM -> UI : selects the vehicle
+          activate UI
+              UI --> GSM : shows all data and requests confirmation
+              deactivate UI
+
+          deactivate UI
+              GSM -> UI : confirms data
+              activate UI
+              UI -> agendaController : addVehicleToAgendaEntry(vehicle, entry)
+              activate agendaController
+              agendaController -> Agenda : addVehicleToAgendaEntry(vehicle, entry)
+              activate Agenda
+                Agenda --> agendaController : success
+                deactivate Agenda
+                agendaController --> UI : success
+                deactivate agendaController
+              UI --> GSM: notifies successful vehicle registration
+          deactivate UI
+
+
+
+
+
+
+
+
+participant "GreenSpacesGUI" as UI
+participant ":ApplicationSession" as AppSession
+
+
+
+GSM -> UI : requests to view green spaces
+activate UI
+
+UI -> ToDoListController : getGreenSpaces()
+activate ToDoListController
+
+ToDoListController -> AppSession : getInstance()
+activate AppSession
+AppSession --> ToDoListController : session
+deactivate AppSession
+
+ToDoListController -> AppSession : getCurrentSession()
+activate AppSession
+AppSession --> ToDoListController : UserSession
+deactivate AppSession
+
+ToDoListController -> GreenSpaceController : getGreenSpacesByUser(UserSession.getUserEmail())
+activate GreenSpaceController
+GreenSpaceController -> GreenSpaceController : sort()
+
+
+GreenSpaceController --> ToDoListController : greenSpaces
+deactivate GreenSpaceController
+
+ToDoListController --> UI : greenSpaces
+deactivate ToDoListController
+
+UI -> GSM : displays green spaces in a list
+deactivate UI
+
+deactivate GSM
+
+
+
+
+
+
+
+
+actor "Actor Collaborator" as CollaboratorActor
+participant ":CheckAssignedTasksGUI" as GUI
+
+activate CollaboratorActor
+CollaboratorActor -> GUI: asks to check assigned tasks
+
+activate GUI
+GUI -> AgendaController: getAssignedEntries()
+activate AgendaController
+
+AgendaController -> Repositories: getInstance()
+activate Repositories
+Repositories --> AgendaController: return instance
+deactivate Repositories
+
+AgendaController -> Repositories: getAgenda()
+activate Repositories
+Repositories --> AgendaController: return agenda
+deactivate Repositories
+
+AgendaController -> Agenda: getAssignedEntries()
+activate Agenda
+Agenda <-- AgendaController: return AssignedEntries
+deactivate Agenda
+
+AgendaController --> GUI: return AssignedEntries
+deactivate AgendaController
+
+GUI --> CollaboratorActor: display returned Entries
+deactivate GUI
+
+CollaboratorActor --> GUI: asks to filter by date or status
+activate GUI
+
+GUI -> AgendaController: filterByDateAndStatus()
+activate AgendaController
+
+AgendaController -> Agenda: filterByDateAndStatus()
+activate Agenda
+
+Agenda --> AgendaController: return filteredEntries
+deactivate Agenda
+
+AgendaController --> GUI: return filteredEntries
+deactivate AgendaController
+
+GUI -> CollaboratorActor: displays updated entries
+deactivate GUI
+
+
+
+
+
+
+
+participant ":CompleteTaskStatusUI" as CTSUI
+
+CollaboratorActor -> CTSUI: asks to set a task as completed
+activate CTSUI
+CTSUI -> RepositoriesSingleton: getInstance()
+activate RepositoriesSingleton
+CTSUI <-- RepositoriesSingleton: instance
+deactivate RepositoriesSingleton
+CTSUI -> Agenda: getEntries()
+activate Agenda
+CTSUI <-- Agenda: entries
+deactivate Agenda
+CTSUI -> CTSUI: showAndSelectIndex(entries, "Select the task that has been completed")
+CTSUI -> AgendaEntry: setStatus(Status.DONE)
+activate AgendaEntry
+CTSUI <-- AgendaEntry: status updated
+deactivate AgendaEntry
+CollaboratorActor <-- CTSUI: "Task status has been updated to DONE."
+deactivate CTSUI
+
+
+@enduml

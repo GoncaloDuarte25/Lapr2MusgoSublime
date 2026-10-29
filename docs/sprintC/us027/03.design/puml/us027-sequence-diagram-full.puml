@@ -1,0 +1,61 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title System Sequence Diagram (SSD) - US027
+
+autonumber
+
+actor "Green Space\n Manager (GSM)" as GSM
+participant "GreenSpacesGUI" as UI
+participant "GreenSpaceController" as ListCtrl
+participant "GreenSpaceRepository" as Repo
+participant ":ApplicationSession" as AppSession
+
+
+activate GSM
+
+GSM -> UI : requests to view green spaces
+activate UI
+
+UI -> ListCtrl : getGreenSpaces()
+activate ListCtrl
+
+ListCtrl -> AppSession : getInstance()
+activate AppSession
+AppSession --> ListCtrl : session
+deactivate AppSession
+
+ListCtrl -> AppSession : getCurrentSession()
+activate AppSession
+AppSession --> ListCtrl : UserSession
+deactivate AppSession
+
+    ListCtrl -> RepositorySingleton : getInstance()
+                                        activate RepositorySingleton
+
+                                            RepositorySingleton --> ListCtrl: repositories
+                                        deactivate RepositorySingleton
+    ListCtrl -> PLAT : getGreenSpaceRepository()
+    activate PLAT
+    PLAT --> ListCtrl : GreenSpaceRepository
+    deactivate PLAT
+
+
+ListCtrl -> Repo : getGreenSpacesByUser(UserSession.getUserEmail())
+activate Repo
+Repo -> Repo : sort()
+
+
+Repo --> ListCtrl : greenSpaces
+deactivate Repo
+
+ListCtrl --> UI : greenSpaces
+deactivate ListCtrl
+
+UI -> GSM : displays green spaces in a list
+deactivate UI
+
+
+@enduml

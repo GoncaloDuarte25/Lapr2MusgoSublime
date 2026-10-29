@@ -1,0 +1,66 @@
+@startuml
+
+title Domain Model
+
+hide methods
+hide circle
+
+class Agenda {
+}
+
+class AgendaEntry {
+  startingDate
+  progressStatus
+}
+
+class GreenSpace {
+  name
+  type
+  size
+  manager
+}
+
+class Team {
+  maxNumberElements
+  minNumberElements
+}
+
+class Entry {
+  title
+  description
+  duration
+  urgency
+  Status
+}
+
+class Collaborator {
+    name
+    birthdate
+    admission date
+    address
+    contact
+    taxpayer number
+    identification document
+    identification number
+}
+
+
+class Status {
+    TOBEDONE
+    DONE
+    IN_PROGRESS
+    POSTPONED
+    CANCELED
+    PLANNED
+
+}
+
+
+AgendaEntry "*" --"1" Status : has
+Agenda "1" -- "1..*" AgendaEntry : has
+Entry "*" -- "1" GreenSpace : is associated to
+AgendaEntry "*" -- "1" Team : assigned to
+AgendaEntry "1" -- "1" Entry : is assigned
+Team "1" -- "1..*" Collaborator : has
+
+@enduml

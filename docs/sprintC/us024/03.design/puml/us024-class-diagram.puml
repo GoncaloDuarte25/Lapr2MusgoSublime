@@ -1,0 +1,58 @@
+@startuml
+'skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype polyline
+'skinparam linetype orto
+skinparam classAttributeIconSize 0
+'left to right direction
+
+EntryController --> Agenda
+EntryController ..> Repositories : repositories
+EntryController --> AgendaEntry
+PostponeEntryGUI ..> EntryController
+Repositories --> "1" Agenda
+
+Repositories <-- Repositories : instance
+Agenda --> AgendaEntry
+
+class EntryController {
+    -Agenda agenda
+    +EntryController()
+    -void getAgenda()
+    +AgendaEntry displayAndSelectEntry()
+    +boolean postponeEntry(AgendaEntry entry, Date newDate)
+}
+
+class AgendaEntry {
+    -String entryTitle
+    -Date date
+    -Team team
+    +String getEntryTitle()
+    +String getDateToString()
+    +void setDate(Date date)
+    +Date getDate()
+    +Date validateDate()
+    +Date validatePostponeDate()
+    +String toString()
+}
+
+
+class Agenda {
+    -static final List<AgendaEntry> agenda
+    +void addEntry(Entry entry)
+    +static void printEntryAt(int nList)
+    +static List<AgendaEntry> getAgenda()
+    +static AgendaEntry getEntryAt(int nList)
+    +static int getSize()
+}
+
+class PostponeEntryGUI {
+}
+
+class Repositories{
+    +getInstance()
+    + getAgenda(): Agenda
+    + getTeamRepository(): TeamRepository
+}
+@enduml

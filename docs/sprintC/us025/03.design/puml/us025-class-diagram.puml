@@ -1,0 +1,56 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+@startuml
+'skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype polyline
+'skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+AgendaController --> AgendaEntry
+AgendaController ..> Repositories : repositories
+AgendaController --> Agenda
+CancelEntryGUI ..> AgendaController
+Repositories --> "1" Agenda
+Repositories <-- Repositories : instance
+
+class AgendaController {
+    -Agenda agenda
+    +CancelEntryController()
+    +List<AgendaEntry> getAgendaEntries()
+    +boolean cancelAgendaEntry(AgendaEntry entry)
+}
+
+class AgendaEntry {
+    -Entry entry
+    -Date startDate
+    -Date endDate
+    -String duration
+    -Status status
+    -Team team
+    -List<Vehicle> vehicle
+    +void setNewEntryState()
+    +String getEntry()
+    +Date getStartDate()
+    +Date getEndDate()
+    +String getDuration()
+}
+
+class Agenda {
+    +List<AgendaEntry> getEntryList()
+    +boolean cancelEntry(AgendaEntry entry)
+}
+
+class CancelEntryGUI {
+}
+
+class Repositories {
+    +getInstance()
+    +getAgenda(): Agenda
+}
+
+@enduml

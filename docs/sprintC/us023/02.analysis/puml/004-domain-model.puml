@@ -1,0 +1,38 @@
+@startuml
+
+'left to right direction
+
+title Domain Model
+
+hide methods
+hide circle
+
+
+
+class Collaborator {
+    name
+    birthdate
+    admission date
+    address
+    contact
+    identification document
+    identification number
+    skills
+}
+
+class Team {
+
+}
+
+class AgendaEntry{
+    entry
+    vehicleList
+    startDate
+    status
+    endDate
+}
+
+Collaborator "*" - "1" Team  : is assigned to >
+Team "1" - "1...*" AgendaEntry : is assigned to >
+
+@enduml

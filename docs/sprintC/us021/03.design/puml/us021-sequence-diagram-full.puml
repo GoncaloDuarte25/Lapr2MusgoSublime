@@ -1,0 +1,95 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+'hide footbox
+actor "Green Space Manager\n (GSM)" as GSM
+participant ":ToDoListGUI" as UI
+participant ":GreenSpaceController" as GSC
+participant ":ToDoListController" as CTRL
+participant ":Repositories" as RepositorySingleton
+participant "repositories\n:Repositories" as PLAT
+participant "greenSpaceRepo:GreenSpaceRepository" as GSR
+participant "ToDoList" as TDL
+
+activate GSM
+
+    GSM -> UI : asks to add a new entry to the To-Do List
+    activate UI
+
+        UI -> GSC : getGreenSpaces()
+        activate GSC
+
+            GSC -> RepositorySingleton : getInstance()
+            activate RepositorySingleton
+
+                RepositorySingleton --> GSC : repositories
+            deactivate RepositorySingleton
+
+            GSC -> PLAT : getGreenSpaceRepository()
+            activate PLAT
+
+                PLAT --> GSC : greenSpaceRepository
+            deactivate PLAT
+
+            GSC -> GSR : getGreenSpaces()
+            activate GSR
+
+                GSR --> GSC : greenSpaces
+            deactivate GSR
+
+
+            GSC --> UI : greenSpaces
+        deactivate GSC
+
+        UI --> GSM : displays a list of green spaces
+    deactivate UI
+
+    GSM -> UI : selects a green space
+    activate UI
+
+    UI --> GSM :  requests data (i.e. title, description, state, \nduration, degree of urgency)
+    deactivate UI
+
+    GSM -> UI : types requested data
+    activate UI
+
+        UI -> CTRL** : create
+
+        UI -> CTRL : createToDoList(title, description, degreeOfUrgency, \nexpectedDuration, status)
+        activate CTRL
+
+            CTRL -> RepositorySingleton : getInstance()
+                       activate RepositorySingleton
+
+                           RepositorySingleton --> CTRL : repositories
+                       deactivate RepositorySingleton
+
+                       CTRL -> TDL : getToDoList()
+                       activate TDL
+
+                           TDL --> CTRL : toDoList
+                       deactivate TDL
+
+                       CTRL -> TDL : addToDoListEntry()
+                       activate TDL
+
+                       TDL -> TDL : validateEntry()
+
+                           TDL --> CTRL : toDoEntry
+                       deactivate TDL
+
+
+                       CTRL --> UI : toDoEntry
+                   deactivate CTRL
+
+               UI --> GSM : displays operation success
+                deactivate UI
+
+
+    deactivate UI
+    deactivate GSM
+@enduml

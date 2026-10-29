@@ -1,0 +1,84 @@
+    @startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+autonumber
+
+'hide footbox
+actor "Organization Employee" as ADM
+participant ":AddEntryToDoListGUI" as UI
+participant ":ToDoListController" as ToDoCTRL
+participant "ToDoList:\TodoList" as ToDoList
+participant ":AgendaController" as EntryCTRL
+participant "Agenda:\Agenda" as EntryRepository
+
+participant ":Repositories" as RepositorySingleton
+participant "repositories\n:Repositories" as PLAT
+
+activate ADM
+    ADM -> UI : asks to add an entry to the ToDoList
+    activate UI
+
+               UI -> ToDoCTRL** : create
+               UI -> ToDoCTRL : addEntry()
+               activate ToDoCTRL
+               ToDoCTRL -> RepositorySingleton : getInstance()
+                    activate RepositorySingleton
+
+                         RepositorySingleton --> ToDoCTRL: repositories
+                    deactivate RepositorySingleton
+                   ToDoCTRL -> PLAT : getSkillRepository()
+                   activate PLAT
+                   PLAT --> ToDoCTRL: ToDoList
+                   deactivate PLAT
+                   ToDoCTRL -> ToDoList: getEntries()
+                   activate ToDoList
+                       ToDoList -> ToDoCTRL: return entries
+                   deactivate ToDoList
+
+                   ToDoCTRL -> UI: return entries
+                   deactivate ToDoCTRL
+
+                UI -> ADM: asks to choose the entry to add
+           deactivate UI
+
+              ADM -> UI : chooses the entry
+                activate UI
+                UI -> ADM: Asks for the start date,\n and end date or duration
+            deactivate UI
+
+            ADM -> UI : enters the start date,\n and end date or duration
+            activate UI
+
+       UI -> EntryCTRL**: create
+       UI -> EntryCTRL : addEntry()
+       activate EntryCTRL
+                       EntryCTRL -> RepositorySingleton : getInstance()
+                       activate RepositorySingleton
+
+                           RepositorySingleton --> EntryCTRL: repositories
+                       deactivate RepositorySingleton
+
+                       EntryCTRL -> PLAT : getAgenda()
+                       activate PLAT
+
+                           PLAT --> EntryCTRL: Agenda
+                       deactivate PLAT
+
+
+
+                       EntryCTRL -> EntryRepository : addEntry(entry)
+                       activate EntryRepository
+
+                    EntryRepository -> EntryCTRL: returns success
+                deactivate EntryRepository
+           EntryCTRL -> UI: returns success
+       deactivate EntryCTRL
+       UI -> ADM: displays success
+    deactivate UI
+
+
+deactivate ADM
+
+@enduml

@@ -1,0 +1,72 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam line type polyline
+
+
+class Vehicle {
+    plate;
+    brand;
+    model;
+    type;
+    tareWeight;
+    grossWeight;
+    currentKM;
+    registerDate;
+    acquisitionDate;
+    checkupIntervalKM;
+    kmLastMaintenance;
+    kmNextMaintenance;
+    maintenanceList;
+
+
+     public Vehicle( plate,  brand,  model,  type, tareWeight, grossWeight, CurrentKM, Date registerDate, Date acquisitionDate, checkupIntervalKM, kmLastMaintenance)
+}
+
+class Brand {
+     model
+
+     Brand(model)
+}
+
+class VehicleRepository {
+     registerVehicle(vin, brand, model, vehiclePlate, tareWeight,grossWeight, currentKm, acquisitionDate, maintenanceFrequency)
+     getVehiclesNeedingMaintenance()
+     getMaintenanceList(vehicle)
+}
+
+
+
+class Repositories {
+     Repositories()
+     getInstance() : Repositories
+     getBrandRepository()
+     getVehicleRepository()
+}
+
+class VehicleController {
+     getVehiclesList()
+     generateMaintenanceList(vehiclesList)
+}
+
+class ListMaintenanceUI {
+}
+
+Repositories -> Repositories : instance
+
+ListMaintenanceUI .> VehicleController
+
+VehicleController .> Repositories : repositories
+
+Repositories -> "1" VehicleRepository
+
+VehicleController ..> VehicleRepository : vehicleRepository
+
+VehicleRepository --> "*" Vehicle
+
+Vehicle --> "1" Brand : brand
+
+VehicleController ..> Brand
+
+
+@enduml

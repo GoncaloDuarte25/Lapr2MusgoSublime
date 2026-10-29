@@ -1,0 +1,45 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype polyline
+
+skinparam classAttributeIconSize 0
+
+class ToDoListGUI {
+}
+
+class GreenSpaceController {
+    + getGreenSpaces() : GreenSpace[]
+}
+
+class ToDoListController {
+    + createToDoList(title : String, description : String, degreeOfUrgency : String, expectedDuration : String, status : String) : ToDoList
+}
+
+class Repositories {
+    + getInstance() : Repositories
+    + getGreenSpaceRepository() : GreenSpaceRepository
+    + getToDoList() : ToDoList
+}
+
+class GreenSpaceRepository {
+    + getGreenSpaces() : GreenSpace[]
+}
+
+class ToDoList {
+    + addToDoListEntry() : void
+    + validateEntry() : void
+}
+
+
+ToDoListGUI ..> GreenSpaceController
+ToDoListGUI ..> ToDoListController
+
+GreenSpaceController ..> Repositories
+ToDoListController ..> Repositories
+
+Repositories ..> GreenSpaceRepository
+Repositories ..> ToDoList
+
+
+@enduml

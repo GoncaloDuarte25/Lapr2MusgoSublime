@@ -1,0 +1,46 @@
+@startuml
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype polyline
+
+skinparam classAttributeIconSize 0
+
+class GreenSpacesGUI {
+}
+
+class GreenSpaceController {
+    + getGreenSpacesByUser(userEmail : String) : GreenSpace[]
+}
+
+class Repositories {
+    + getInstance() : Repositories
+    + getGreenSpaceRepository() : GreenSpaceRepository
+}
+
+class GreenSpaceRepository {
+    + getGreenSpacesByUser(userEmail : String) : GreenSpace[]
+}
+
+class GreenSpace {
+    - String name
+    - int size
+    - String manager
+}
+
+class ApplicationSession {
+    + getInstance() : ApplicationSession
+    + getCurrentSession() : UserSession
+}
+
+class UserSession {
+    + getUserEmail() : String
+}
+
+GreenSpacesGUI ..> GreenSpaceController
+GreenSpaceController ..> Repositories
+GreenSpaceController ..> ApplicationSession
+Repositories ..> GreenSpaceRepository
+ApplicationSession ..> UserSession
+GreenSpaceRepository ..> GreenSpace
+
+@enduml

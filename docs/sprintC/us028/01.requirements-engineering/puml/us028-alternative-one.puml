@@ -1,0 +1,27 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title System Sequence Diagram
+
+autonumber
+
+actor "Collaborator"
+participant "System" as System
+
+activate Collaborator
+
+Collaborator -> System : requests to consult assigned tasks
+activate System
+
+System --> Collaborator : asks for the start and end dates
+deactivate System
+
+Collaborator -> System : provides the dates
+activate System
+
+System --> Collaborator : retrieves and displays tasks assigned between the provided dates
+deactivate System
+
+@enduml

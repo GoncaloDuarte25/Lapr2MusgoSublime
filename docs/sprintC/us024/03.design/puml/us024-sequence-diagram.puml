@@ -1,0 +1,69 @@
+@startuml
+skinparam monochrome true
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+title System Sequence Diagram (SSD)
+
+autonumber
+
+actor "GSM" as Employee
+participant ":PostponeEntryGUI" as UI
+participant ":AgendaController" as CTRL
+participant ":Repositories" as RepositorySingleton
+participant "repositories\n:Repositories" as AgendaRepo
+participant "agenda\n:Agenda" as AGR
+
+activate Employee
+
+    Employee -> UI : asks to postpone an entry in the Agenda
+    activate UI
+
+        UI -> CTRL : getAgendaEntries()
+        activate CTRL
+
+            CTRL -> RepositorySingleton : getInstance()
+            activate RepositorySingleton
+
+                RepositorySingleton --> CTRL: repositories
+            deactivate RepositorySingleton
+
+            CTRL -> AgendaRepo : getAgenda()
+            activate AgendaRepo
+
+                AgendaRepo --> CTRL : agenda
+            deactivate AgendaRepo
+
+             CTRL -> AGR : getEntries()
+                activate AGR
+
+            AGR --> CTRL : entries
+                deactivate AGR
+
+            CTRL --> UI : entryList
+        deactivate CTRL
+
+        UI --> Employee : shows the list of entries and asks to select one
+    deactivate UI
+
+    Employee -> UI : selects an entry and provides a new date
+    activate UI
+
+        UI -> CTRL : postponeEntry(selectedEntry, newDate)
+        activate CTRL
+
+            CTRL -> AgendaRepo : updateEntryDateAndStatus(updatedEntry, newDate)
+            activate AgendaRepo
+
+                AgendaRepo --> CTRL : success/failure
+            deactivate AgendaRepo
+
+            CTRL --> UI : displays message of (in)success
+        deactivate CTRL
+
+        UI --> Employee : displays message of (in)success
+    deactivate UI
+
+deactivate Employee
+
+@enduml
